@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Smart Analytics · Saúde Mental em Idosos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@500;700&display=swap');
+:root {
+  --blue:    #1A3A5C;
+  --blue2:   #2563EB;
+  --g50:     #F8FAFC;
+  --g100:    #F1F5F9;
+  --g200:    #E2E8F0;
+  --g400:    #94A3B8;
+  --g600:    #475569;
+  --g800:    #1E293B;
+  --white:   #FFFFFF;
+  --bg:      #F0F4F8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--g800);height:100vh;overflow:hidden;display:flex;flex-direction:column;max-width:100vw;}
+
+/* TOPBAR */
+header{background:var(--blue);height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1.2rem;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.logo{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:white;}
+.logo span{color:#7DD3FC;}
+.hspacer{flex:1;}
+.badge{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:5px;padding:0.2rem 0.6rem;font-size:0.7rem;color:rgba(255,255,255,0.65);}
+.info-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:0.22rem 0.75rem;font-size:0.75rem;color:rgba(255,255,255,0.75);cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;}
+.info-btn:hover{background:rgba(255,255,255,0.18);color:white;}
+
+/* MAIN */
+.main{flex:1;display:grid;grid-template-columns:370px minmax(0,1fr) minmax(0,1fr);gap:0.9rem;padding:0.9rem;overflow:hidden;align-items:stretch;width:100%;}
+
+/* CARDS */
+.card{background:white;border-radius:14px;border:1px solid var(--g200);box-shadow:0 6px 24px rgba(26,58,92,0.10), 0 2px 6px rgba(0,0,0,0.05);padding:1rem 1.1rem 1.2rem;display:flex;flex-direction:column;overflow:visible;height:100%;}
+.card-title{font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:700;color:var(--blue);padding-bottom:0.55rem;border-bottom:1px solid var(--g100);margin-bottom:0.7rem;flex-shrink:0;}
+.scroll{overflow-y:auto;flex:1;padding-bottom:0.5rem;}
+.scroll::-webkit-scrollbar{width:3px;}
+.scroll::-webkit-scrollbar-thumb{background:var(--g200);border-radius:2px;}
+
+/* PERFIS */
+.perfis{display:flex;gap:0.4rem;margin-bottom:0.65rem;}
+.pbtn{flex:1;padding:0.32rem 0.2rem;border-radius:7px;border:1.5px solid var(--g200);background:var(--g50);font-size:0.7rem;font-weight:600;color:var(--g600);cursor:pointer;text-align:center;transition:all 0.15s;font-family:'Inter',sans-serif;}
+.pbtn:hover,.pbtn.active{border-color:var(--blue);background:#EFF6FF;color:var(--blue);}
+
+/* SLIDERS */
+.field{margin-bottom:0.48rem;}
+.flabel{display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;color:var(--g600);margin-bottom:1px;}
+.fval{font-weight:700;color:var(--blue);font-size:0.74rem;}
+input[type=range]{width:100%;height:4px;appearance:none;background:var(--g200);border-radius:2px;cursor:pointer;outline:none;}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+
+/* SELECTS */
+select{width:100%;padding:0.28rem 0.5rem;border:1px solid var(--g200);border-radius:7px;background:white;font-size:0.77rem;color:var(--g800);font-family:'Inter',sans-serif;cursor:pointer;outline:none;margin-bottom:0.48rem;}
+select:focus{border-color:var(--blue);}
+.slabel{font-size:0.72rem;color:var(--g600);margin-bottom:1px;display:block;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 0.8rem;}
+.mini{font-size:0.63rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g400);margin:0.5rem 0 0.25rem;}
+.divider{border:none;border-top:1px solid var(--g100);margin:0.55rem 0;}
+.oms{font-size:0.7rem;color:var(--g600);margin-top:0.1rem;}
+
+/* BASE BOX */
+.base-box{background:#EFF6FF;border-left:3px solid #3B82F6;border-radius:0 8px 8px 0;padding:0.42rem 0.7rem;font-size:0.76rem;color:#1E40AF;margin-bottom:0.5rem;}
+
+/* INTERVENÇÃO */
+.interv-section{background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:0.7rem 0.8rem;margin-top:0.5rem;}
+.interv-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--blue);margin-bottom:0.5rem;}
+
+/* LIMIARES */
+.limiar-row{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.45rem;}
+.lbox{background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:8px;padding:0.4rem 0.5rem;text-align:center;}
+.lbox.none{background:var(--g50);border-color:var(--g200);}
+.lval{font-size:1rem;font-weight:700;color:var(--blue);}
+.ltxt{font-size:0.65rem;color:var(--g600);margin-top:0.1rem;}
+
+/* BTNS */
+.btn{width:100%;padding:0.4rem;border-radius:8px;border:none;background:var(--blue);color:white;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;margin-top:0.4rem;}
+.btn:hover{background:#14304D;}
+.btn-out{background:white;color:var(--blue);border:1.5px solid var(--blue);}
+.btn-out:hover{background:#EFF6FF;}
+
+/* GAUGES */
+.gauges{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-bottom:0.5rem;}
+
+/* CHIPS */
+.chip{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.8rem 0.8rem;border-radius:10px;margin-bottom:0.42rem;border-left:4px solid;overflow:visible;transition:background 0.4s ease, border-color 0.4s ease, color 0.4s ease;}
+.clabel{font-size:0.62rem;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;opacity:0.55;}
+.cclasse{font-size:0.9rem;font-weight:700;margin:0 0 0.25rem;line-height:1.8;display:block;text-transform:capitalize;}
+.cdesc{font-size:0.67rem;opacity:0.6;}
+.cicon{font-size:1.4rem;transition:transform 0.3s ease;}
+.chip-minima  {background:#F0FDF4;border-color:#22C55E;color:#166534;}
+.chip-leve    {background:#EFF6FF;border-color:#3B82F6;color:#1E40AF;}
+.chip-moderada{background:#FFFBEB;border-color:#F59E0B;color:#92400E;}
+.chip-modgrave{background:#FFF7ED;border-color:#F97316;color:#9A3412;}
+.chip-grave   {background:#FEF2F2;border-color:#EF4444;color:#991B1B;}
+
+/* MÉTRICAS */
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.4rem;margin-top:0.5rem;}
+.mbox{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:0.42rem 0.55rem;text-align:center;}
+.mlabel{font-size:0.6rem;color:var(--g400);margin-bottom:0.12rem;}
+.mval{font-size:0.9rem;font-weight:700;color:var(--blue);}
+.mdelta{font-size:0.6rem;font-weight:600;margin-top:0.08rem;}
+.dok{color:#16A34A;}.dbad{color:#DC2626;}
+
+/* SHAP */
+.shap-title{font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--blue);margin-bottom:0.38rem;}
+.shap-row{display:flex;align-items:center;gap:0.42rem;margin-bottom:0.32rem;}
+.shap-label{width:100px;font-size:0.69rem;color:var(--g600);flex-shrink:0;line-height:1.2;}
+.shap-wrap{flex:1;background:var(--g100);border-radius:4px;height:7px;overflow:hidden;}
+.shap-bar{height:100%;border-radius:4px;transition:width 0.4s ease;}
+.spos{background:#EF4444;}.sneg{background:#22C55E;}
+.spct{font-size:0.65rem;font-weight:600;width:90px;text-align:right;flex-shrink:0;white-space:nowrap;}
+.sppos{color:#DC2626;}.spneg{color:#15803D;}
+.shap-leg{font-size:0.67rem;color:var(--g400);margin-bottom:0.48rem;}
+.shap-leg .r{color:#DC2626;font-weight:600;}.shap-leg .g{color:#15803D;font-weight:600;}
+
+/* MODAL */
+.overlay{display:flex;visibility:hidden;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:200;align-items:center;justify-content:center;transition:background 0.25s ease,visibility 0.25s;}
+.overlay.open{visibility:visible;background:rgba(0,0,0,0.45);}
+.overlay .modal{transform:translateY(18px);opacity:0;transition:transform 0.28s ease,opacity 0.28s ease;}
+.overlay.open .modal{transform:translateY(0);opacity:1;}
+.ds-table-wrap{overflow:auto;max-height:55vh;margin-top:0.8rem;border-radius:8px;border:1px solid var(--g200);}
+table{width:100%;border-collapse:collapse;font-size:0.72rem;}
+thead{position:sticky;top:0;background:var(--blue);color:white;z-index:1;}
+th{padding:0.45rem 0.6rem;text-align:left;font-weight:600;white-space:nowrap;font-size:0.68rem;}
+td{padding:0.38rem 0.6rem;border-bottom:1px solid var(--g100);white-space:nowrap;}
+tr:hover td{background:#EFF6FF;cursor:pointer;}
+.ds-search{width:100%;padding:0.4rem 0.7rem;border:1px solid var(--g200);border-radius:8px;font-size:0.8rem;font-family:Inter,sans-serif;margin-bottom:0.3rem;outline:none;}
+.ds-search:focus{border-color:var(--blue);}
+.chip-mini{display:inline-block;padding:0.1rem 0.4rem;border-radius:4px;font-size:0.65rem;font-weight:700;}
+.cm-minima{background:#F0FDF4;color:#166534;}.cm-leve{background:#EFF6FF;color:#1E40AF;}
+.cm-moderada{background:#FFFBEB;color:#92400E;}.cm-modgrave{background:#FFF7ED;color:#9A3412;}.cm-grave{background:#FEF2F2;color:#991B1B;}
+.ds-count{font-size:0.72rem;color:var(--g400);margin-bottom:0.3rem;}
+.overlay.open{display:flex;}
+.modal{background:white;border-radius:16px;padding:1.4rem;max-width:780px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;padding-bottom:0.7rem;border-bottom:1px solid var(--g200);}
+.mtitle{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;color:var(--blue);}
+.mclose{background:var(--g100);border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.9rem;}
+.ibox{background:var(--blue);border-radius:10px;padding:0.85rem 0.95rem;color:white;}
+.ibox h4{font-size:0.61rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.5;margin-bottom:0.5rem;}
+.irow{display:flex;justify-content:space-between;font-size:0.76rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.07);}
+.irow:last-child{border:none;}
+.ival{font-weight:700;color:#7DD3FC;}
+.ip{font-size:0.77rem;opacity:0.82;line-height:1.5;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+.crow{font-size:0.76rem;padding:0.17rem 0;}
+
+canvas{display:block;width:100%!important;}
+.pin-row{display:flex;gap:0.4rem;margin-top:0.3rem;flex-wrap:wrap;}
+.pin-tag{display:flex;align-items:center;gap:0.3rem;background:#EFF6FF;border:1px solid #93C5FD;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;color:#1E40AF;font-weight:600;}
+.pin-tag button{background:none;border:none;cursor:pointer;color:#64748B;font-size:0.75rem;line-height:1;padding:0;}
+.pin-tag button:hover{color:#DC2626;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧠 Smart <span>Analytics</span></div>
+  <div class="hspacer"></div>
+
+  <button class="info-btn" onclick="toggleDataset()">📊 Dataset</button>
+  <button class="info-btn" onclick="toggleInfo()">ℹ️ Sobre o projeto</button>
+</header>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal">
+    <div class="mhdr">
+      <span class="mtitle">🧠 Smart Analytics · Sobre o Projeto</span>
+      <button class="mclose" onclick="toggleInfo()">✕</button>
+    </div>
+    <div class="mgrid">
+      <div>
+        <div class="ibox">
+          <h4>Sobre o Estudo</h4>
+          <p class="ip">Investigação sobre a previsão de níveis de depressão (PHQ-9) e ansiedade (GAD-7) em idosos a partir de variáveis de estilo de vida e dados sociodemográficos, com foco na atividade física. Dataset sintético, N=3 915.</p>
+        </div>
+        <div class="ibox" style="margin-top:0.7rem">
+          <h4>Autora</h4>
+          <div class="irow"><span>Nome</span><span class="ival">Angelina Santos</span></div>
+          <div class="irow"><span>Projeto</span><span class="ival">Smart Analytics</span></div>
+          <div class="irow"><span>Ano</span><span class="ival">2026</span></div>
+        </div>
+      </div>
+      <div class="ibox">
+        <h4>Modelo</h4>
+        <div class="irow"><span>Algoritmo</span><span class="ival">XGBoost</span></div>
+        <div class="irow"><span>Otimização</span><span class="ival">GridSearchCV</span></div>
+        <div class="irow"><span>Validação</span><span class="ival">StratifiedKFold 5</span></div>
+        <div class="irow"><span>Split</span><span class="ival">80% / 20%</span></div>
+        <div class="irow"><span>Dataset (N)</span><span class="ival">3 915</span></div>
+        <div class="irow"><span>PHQ-9 F1</span><span class="ival">0.7957</span></div>
+        <div class="irow"><span>PHQ-9 Acc.</span><span class="ival">81.5%</span></div>
+        <div class="irow"><span>GAD-7 F1</span><span class="ival">0.7758</span></div>
+        <div class="irow"><span>GAD-7 Acc.</span><span class="ival">81.6%</span></div>
+      </div>
+      <div class="ibox">
+        <h4>Classes PHQ-9 · Depressão</h4>
+        <div class="crow"><span class="dot" style="background:#22C55E"></span>Mínima — 0 a 4 pontos</div>
+        <div class="crow"><span class="dot" style="background:#3B82F6"></span>Leve — 5 a 9 pontos</div>
+        <div class="crow"><span class="dot" style="background:#F59E0B"></span>Moderada — 10 a 14 pontos</div>
+        <div class="crow"><span class="dot" style="background:#F97316"></span>Mod. grave — 15 a 19 pontos</div>
+        <div class="crow"><span class="dot" style="background:#EF4444"></span>Grave — 20 ou mais pontos</div>
+        <div style="margin-top:0.7rem"></div>
+        <h4>Classes GAD-7 · Ansiedade</h4>
+        <div class="crow"><span class="dot" style="background:#22C55E"></span>Mínima — 0 a 4 pontos</div>
+        <div class="crow"><span class="dot" style="background:#3B82F6"></span>Leve — 5 a 9 pontos</div>
+        <div class="crow"><span class="dot" style="background:#F59E0B"></span>Moderada — 10 a 13 pontos</div>
+        <div class="crow"><span class="dot" style="background:#EF4444"></span>Grave — 14 ou mais pontos</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DATASET -->
+<div class="overlay" id="overlay-ds" onclick="closeDsModal(event)">
+  <div class="modal" style="max-width:960px">
+    <div class="mhdr">
+      <span class="mtitle">📊 Dataset · 3 915 participantes</span>
+      <button class="mclose" onclick="toggleDataset()">✕</button>
+    </div>
+    <input class="ds-search" type="text" placeholder="Pesquisar por ID, idade, género..." oninput="filtrarDataset(this.value)">
+    <div class="ds-count" id="ds-count">A carregar...</div>
+    <div class="ds-table-wrap">
+      <table id="ds-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Idade</th><th>Género</th><th>Sono</th><th>Comor.</th>
+            <th>Dias ativ.</th><th>Min/sem</th><th>Tipo</th><th>Intensidade</th>
+            <th>PHQ-9 real</th><th>GAD-7 real</th><th>PHQ-9 prev.</th><th>GAD-7 prev.</th>
+          </tr>
+        </thead>
+        <tbody id="ds-body"></tbody>
+      </table>
+    </div>
+    <p style="font-size:0.7rem;color:var(--g400);margin-top:0.6rem">💡 Clica numa linha para carregar esse participante na análise.</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- COL 1: PERFIL -->
+  <div class="card">
+    <div class="card-title">Perfil do Participante</div>
+    <div class="scroll">
+
+      <div style="font-size:0.68rem;color:var(--g400);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:0.35rem">Exemplos de participantes com:</div>
+      <div class="perfis">
+        <button class="pbtn active" onclick="loadPerfil('alto',this)">🔴 Alto risco</button>
+        <button class="pbtn" onclick="loadPerfil('medio',this)">🟡 Moderado</button>
+        <button class="pbtn" onclick="loadPerfil('baixo',this)">🟢 Baixo risco</button>
+      </div>
+      <div id="participante-id" style="font-size:0.75rem;color:var(--g600);background:var(--g50);border:1px solid var(--g200);border-radius:7px;padding:0.3rem 0.7rem;margin-bottom:0.5rem;display:none">
+        👤 Participante <strong id="pid-val">—</strong>
+      </div>
+      <hr class="divider">
+
+      <div id="controlos-perfil">
+      <div class="grid2">
+        <div>
+          <label class="slabel">Género</label>
+          <select id="gender" onchange="prever()">
+            <option value="1">Masculino</option>
+            <option value="2">Feminino</option>
+          </select>
+          <div class="field">
+            <div class="flabel">Idade <span class="fval" id="v_age">81</span></div>
+            <input type="range" id="age" min="60" max="95" value="81" oninput="sv('age');prever()">
+          </div>
+          <div class="field">
+            <div class="flabel">Sono (h/noite) <span class="fval" id="v_sleep">4.4</span></div>
+            <input type="range" id="sleep" min="3" max="12" value="4.4" step="0.5" oninput="sv('sleep');prever()">
+          </div>
+          <div class="field">
+            <div class="flabel">Comorbilidades <span class="fval" id="v_comor">6</span></div>
+            <input type="range" id="comor" min="0" max="10" value="6" oninput="sv('comor');prever()">
+          </div>
+          <div class="field">
+            <div class="flabel">Rendimento (€) <span class="fval" id="v_income">2050</span></div>
+            <input type="range" id="income" min="300" max="5000" value="2050" step="50" oninput="sv('income');prever()">
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <div class="flabel">Escolaridade (anos) <span class="fval" id="v_edu">5</span></div>
+            <input type="range" id="edu" min="0" max="20" value="5" oninput="sv('edu');prever()">
+          </div>
+          <label class="slabel">Estado civil</label>
+          <select id="marital" onchange="prever()">
+            <option value="1">Casado(a)</option>
+            <option value="2">Divorciado(a)</option>
+            <option value="3">Viúvo(a)</option>
+            <option value="4" selected>União de facto</option>
+          </select>
+          <label class="slabel">Habitação</label>
+          <select id="living" onchange="prever()">
+            <option value="1">Sozinho(a)</option>
+            <option value="2">Com família</option>
+            <option value="3">Lar de idosos</option>
+            <option value="4" selected>Com cuidador</option>
+          </select>
+          <label class="slabel">Tipo de atividade</label>
+          <select id="act_type" onchange="prever()">
+            <option value="0" selected>Nenhuma</option>
+            <option value="1">Caminhada</option>
+            <option value="2">Natação</option>
+            <option value="3">Ginástica</option>
+            <option value="4">Ciclismo</option>
+            <option value="5">Outro</option>
+          </select>
+          <label class="slabel">Intensidade</label>
+          <select id="act_int" onchange="prever()">
+            <option value="0" selected>Nenhuma</option>
+            <option value="1">Leve</option>
+            <option value="2">Moderada</option>
+            <option value="3">Intensa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mini">Atividade Física</div>
+      <div class="grid2">
+        <div class="field">
+          <div class="flabel">Dias/semana <span class="fval" id="v_days">0</span></div>
+          <input type="range" id="days" min="0" max="7" value="0" oninput="sv('days');calcTotal();prever()">
+        </div>
+        <div class="field">
+          <div class="flabel">Min./sessão <span class="fval" id="v_mins">0</span></div>
+          <input type="range" id="mins" min="0" max="120" value="0" step="5" oninput="sv('mins');calcTotal();prever()">
+        </div>
+      </div>
+      <div class="oms" id="oms_tag">⚠️ Total: 0 min/semana (abaixo OMS ≥150)</div>
+
+      <hr class="divider">
+
+      <!-- SECÇÃO E SE? -->
+      </div><!-- /controlos-perfil -->
+
+      <div id="sec-base">
+        <button class="btn" onclick="congelar()">❄️ Analisar intervenção</button>
+      </div>
+
+      <div id="sec-interv" style="display:none">
+        <div class="base-box">
+          📌 Base: PHQ-9 = <strong id="base-phq9">—</strong> · GAD-7 = <strong id="base-gad7">—</strong>
+        </div>
+        <div class="interv-section">
+          <div class="interv-title">E se eu mudar...</div>
+          <label class="slabel">Variável</label>
+          <select id="var-sel" onchange="calcInterv()">
+            <option value="physical_activity_total_minutes_week">Minutos atividade/semana</option>
+            <option value="sleep_hours">Horas de sono/noite</option>
+            <option value="physical_activity_minutes_per_session">Min. por sessão</option>
+            <option value="physical_activity_days_per_week">Dias atividade/semana</option>
+            <option value="physical_activity_intensity">Intensidade da atividade</option>
+          </select>
+          <div class="field">
+            <div class="flabel" id="interv-lbl">Minutos atividade/semana <span class="fval" id="interv-val">0</span></div>
+            <input type="range" id="interv-slider" min="0" max="420" value="0" step="10" oninput="syncInterv()">
+          </div>
+          <button class="btn btn-out" style="margin-top:0.2rem;font-size:0.73rem;padding:0.28rem" onclick="fixarValor()">📌 Fixar valor atual no perfil base</button>
+          <div class="pin-row" id="pin-row"></div>
+          <canvas id="chart" height="130"></canvas>
+          <div class="limiar-row">
+            <div class="lbox" id="lbox-p"><div class="lval" id="lval-p">—</div><div class="ltxt" id="ltxt-p">PHQ-9</div></div>
+            <div class="lbox" id="lbox-g"><div class="lval" id="lval-g">—</div><div class="ltxt" id="ltxt-g">GAD-7</div></div>
+          </div>
+        </div>
+        <button class="btn btn-out" onclick="resetBase()">🔄 Limpar análise</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 2: PREVISÃO -->
+  <div class="card">
+    <div class="card-title">Previsão em Tempo Real</div>
+    <div class="scroll">
+      <div class="gauges">
+        <svg id="g-phq9" viewBox="0 0 180 92" xmlns="http://www.w3.org/2000/svg" style="width:100%"></svg>
+        <svg id="g-gad7" viewBox="0 0 180 92" xmlns="http://www.w3.org/2000/svg" style="width:100%"></svg>
+      </div>
+      <hr class="divider">
+      <div id="chip-phq9" class="chip chip-modgrave">
+        <div><div class="clabel">PHQ-9 · Depressão</div><div class="cclasse" id="c-phq9">Mod. grave</div><div class="cdesc" id="d-phq9">Intervenção recomendada</div></div>
+        <div class="cicon" id="i-phq9">😟</div>
+      </div>
+      <div id="chip-gad7" class="chip chip-moderada">
+        <div><div class="clabel">GAD-7 · Ansiedade</div><div class="cclasse" id="c-gad7">Moderada</div><div class="cdesc" id="d-gad7">Acompanhamento aconselhado</div></div>
+        <div class="cicon" id="i-gad7">😐</div>
+      </div>
+      <hr class="divider">
+      <div class="metrics">
+        <div class="mbox"><div class="mlabel">Idade</div><div class="mval" id="m-idade">81 anos</div></div>
+        <div class="mbox"><div class="mlabel">Atividade</div><div class="mval" id="m-ativ">0 min</div><div class="mdelta dbad" id="m-ativ-d">⚠ &lt; OMS</div></div>
+        <div class="mbox"><div class="mlabel">Sono</div><div class="mval" id="m-sono">4.4h</div><div class="mdelta dbad" id="m-sono-d">⚠ Inadequado</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 3: SHAP -->
+  <div class="card">
+    <div class="card-title">Impacto das Variáveis (SHAP)</div>
+    <div class="scroll">
+      <div class="shap-leg"><span class="r">■</span> aumenta risco &nbsp;·&nbsp; <span class="g">■</span> reduz risco</div>
+      <div id="shap-out"><div style="font-size:0.78rem;color:var(--g400)">A calcular...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API='';
+const CORES={'Mínima':'#22C55E','Leve':'#3B82F6','Moderada':'#F59E0B','Mod. grave':'#F97316','Grave':'#EF4444'};
+const OP9=['Mínima','Leve','Moderada','Mod. grave','Grave'];
+const OG7=['Mínima','Leve','Moderada','Grave'];
+const CCSS={'Mínima':'chip-minima','Leve':'chip-leve','Moderada':'chip-moderada','Mod. grave':'chip-modgrave','Grave':'chip-grave'};
+const CICO={'Mínima':'😊','Leve':'🙂','Moderada':'😐','Mod. grave':'😟','Grave':'😰'};
+const DP9={'Mínima':'Sem sintomas significativos','Leve':'Sintomas leves','Moderada':'Acompanhamento aconselhado','Mod. grave':'Intervenção recomendada','Grave':'Intervenção urgente'};
+const DG7={'Mínima':'Ansiedade mínima','Leve':'Ansiedade leve','Moderada':'Acompanhamento aconselhado','Grave':'Intervenção urgente'};
+const CFG={
+  'physical_activity_total_minutes_week':{min:0,max:420,step:10,lbl:'Min. atividade/semana',un:'min/sem'},
+  'sleep_hours':{min:3,max:12,step:0.5,lbl:'Horas de sono/noite',un:'h/noite'},
+  'physical_activity_days_per_week':{min:0,max:7,step:1,lbl:'Dias atividade/semana',un:'dias/sem'},
+  'physical_activity_minutes_per_session':{min:0,max:120,step:5,lbl:'Min. por sessão',un:'min/sessão'},
+};
+const PERFIL_IDS={alto:3594, medio:3215, baixo:606};
+const PERFIS={
+  alto:  {age:84,gender:2,education_years:4,monthly_income:620,marital_status:4,living_situation:4,comorbidities_count:5,physical_activity_days_per_week:1,physical_activity_minutes_per_session:12,physical_activity_total_minutes_week:12,physical_activity_type:3,physical_activity_intensity:1,sleep_hours:5.4},
+  medio: {age:74,gender:1,education_years:7,monthly_income:2601,marital_status:2,living_situation:2,comorbidities_count:4,physical_activity_days_per_week:4,physical_activity_minutes_per_session:29,physical_activity_total_minutes_week:116,physical_activity_type:1,physical_activity_intensity:2,sleep_hours:7.1},
+  baixo: {age:74,gender:2,education_years:10,monthly_income:2451,marital_status:2,living_situation:2,comorbidities_count:2,physical_activity_days_per_week:5,physical_activity_minutes_per_session:48,physical_activity_total_minutes_week:240,physical_activity_type:2,physical_activity_intensity:2,sleep_hours:6.8},
+};
+
+let base=null, intervData=null, debT=null, pins={};
+
+function toggleInfo(){document.getElementById('overlay').classList.toggle('open');}
+function closeOverlay(e){if(e.target===document.getElementById('overlay'))toggleInfo();}
+
+function sv(id){document.getElementById('v_'+id).textContent=document.getElementById(id).value;}
+
+function calcTotal(){
+  const d=+document.getElementById('days').value, m=+document.getElementById('mins').value;
+  const t=d*m, ok=t>=150;
+  document.getElementById('oms_tag').textContent=(ok?'✅':'⚠️')+' Total: '+t+' min/semana '+(ok?'(cumpre OMS ≥150)':'(abaixo OMS)');
+  return t;
+}
+
+function getPerfil(){
+  return {
+    age:+document.getElementById('age').value,
+    gender:+document.getElementById('gender').value,
+    education_years:+document.getElementById('edu').value,
+    monthly_income:+document.getElementById('income').value,
+    marital_status:+document.getElementById('marital').value,
+    living_situation:+document.getElementById('living').value,
+    comorbidities_count:+document.getElementById('comor').value,
+    physical_activity_days_per_week:+document.getElementById('days').value,
+    physical_activity_minutes_per_session:+document.getElementById('mins').value,
+    physical_activity_total_minutes_week:calcTotal(),
+    physical_activity_type:+document.getElementById('act_type').value,
+    physical_activity_intensity:+document.getElementById('act_int').value,
+    sleep_hours:+document.getElementById('sleep').value,
+  };
+}
+
+function drawGauge(id, classe, ordem){
+  const svg=document.getElementById(id), n=ordem.length, idx=ordem.indexOf(classe);
+  const cor=CORES[classe]||'#94A3B8', cx=90,cy=78,r=62, seg=180/n;
+  let h='';
+  for(let i=0;i<n;i++){
+    const a1=(180-i*seg)*Math.PI/180, a2=(180-(i+1)*seg)*Math.PI/180;
+    const x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1),x2=cx+r*Math.cos(a2),y2=cy-r*Math.sin(a2);
+    const c=CORES[ordem[i]]||'#94A3B8', op=i===idx?'1':'0.14';
+    h+=`<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0,0 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${c}" opacity="${op}"/>`;
+  }
+  const ang=(180-(idx+0.5)*seg)*Math.PI/180;
+  const nx=cx+(r-10)*Math.cos(ang),ny=cy-(r-10)*Math.sin(ang);
+  const lbl=id.includes('phq9')?'PHQ-9 · DEPRESSÃO':'GAD-7 · ANSIEDADE';
+  h+=`<line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1A3A5C" stroke-width="2.5" stroke-linecap="round" style="transition:all 0.4s ease"/>`;
+  h+=`<circle cx="${cx}" cy="${cy}" r="5" fill="${cor}"/>`;
+  h+=`<text x="${cx}" y="${cy+14}" text-anchor="middle" font-family="Inter" font-size="12" font-weight="700" fill="${cor}">${classe.replace(/\b\w/g, c => c.toUpperCase())}</text>`;
+  h+=`<text x="${cx}" y="${cy-69}" text-anchor="middle" font-family="Inter" font-size="7.5" fill="#94A3B8">${lbl}</text>`;
+  svg.innerHTML=h;
+}
+
+function updateChips(p9,g7){
+  const cp=document.getElementById('chip-phq9'), cg=document.getElementById('chip-gad7');
+  if(cp){
+    const prevCls = cp.className;
+    cp.className=`chip ${CCSS[p9]}`;
+    document.getElementById('c-phq9').textContent=p9;
+    document.getElementById('d-phq9').textContent=DP9[p9];
+    const ip=document.getElementById('i-phq9');
+    if(ip.textContent!==CICO[p9]){ip.style.transform='scale(1.4)';ip.textContent=CICO[p9];setTimeout(()=>ip.style.transform='scale(1)',200);}
+  }
+  if(cg){
+    cg.className=`chip ${CCSS[g7]}`;
+    document.getElementById('c-gad7').textContent=g7;
+    document.getElementById('d-gad7').textContent=DG7[g7];
+    const ig=document.getElementById('i-gad7');
+    if(ig.textContent!==CICO[g7]){ig.style.transform='scale(1.4)';ig.textContent=CICO[g7];setTimeout(()=>ig.style.transform='scale(1)',200);}
+  }
+}
+
+function updateMetrics(p){
+  const t=p.physical_activity_total_minutes_week, s=p.sleep_hours;
+  const ok=t>=150, sok=s>=7&&s<=9;
+  const ei=document.getElementById('m-idade'), ea=document.getElementById('m-ativ'), ead=document.getElementById('m-ativ-d'), es=document.getElementById('m-sono'), esd=document.getElementById('m-sono-d');
+  if(ei) ei.textContent=p.age+' anos';
+  if(ea) ea.textContent=t+' min';
+  if(ead){ead.textContent=ok?'✓ OMS ≥150':'⚠ < OMS';ead.className='mdelta '+(ok?'dok':'dbad');}
+  if(es) es.textContent=s+'h';
+  if(esd){esd.textContent=sok?'✓ Adequado':'⚠ Inadequado';esd.className='mdelta '+(sok?'dok':'dbad');}
+}
+
+function renderShap(sp,sg){
+  function rows(items){
+    return items.map(s=>{
+      const pos=s.value>0, bar=Math.min(s.pct*3.5,100);
+      return `<div class="shap-row"><div class="shap-label">${s.feature}</div><div class="shap-wrap"><div class="shap-bar ${pos?'spos':'sneg'}" style="width:${bar}%"></div></div><div class="spct ${pos?'sppos':'spneg'}">${pos?'+':'−'}${s.pct.toFixed(1)}% (${pos?'↑':'↓'} risco)</div></div>`;
+    }).join('');
+  }
+  const o=document.getElementById('shap-out');
+  if(o) o.innerHTML=`<div class="shap-title">PHQ-9 · Depressão</div>${rows(sp)}<hr class="divider"><div class="shap-title">GAD-7 · Ansiedade</div>${rows(sg)}`;
+}
+
+async function prever(){
+  clearTimeout(debT);
+  debT=setTimeout(async()=>{
+    const p=getPerfil();
+    try{
+      const r=await fetch(API+'/prever',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const d=await r.json();
+      drawGauge('g-phq9',d.phq9,OP9);
+      drawGauge('g-gad7',d.gad7,OG7);
+      updateChips(d.phq9,d.gad7);
+      updateMetrics(p);
+      renderShap(d.shap_phq9,d.shap_gad7);
+    }catch(e){console.error(e);}
+  },120);
+}
+
+function loadPerfil(nome,btn){
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const pid = PERFIL_IDS[nome];
+  const pidEl = document.getElementById('participante-id');
+  const pidVal = document.getElementById('pid-val');
+  if(pidEl && pidVal && pid){ pidEl.style.display='block'; pidVal.textContent=pid; }
+  const p=PERFIS[nome];
+  document.getElementById('age').value=p.age; document.getElementById('v_age').textContent=p.age;
+  document.getElementById('gender').value=p.gender;
+  document.getElementById('edu').value=p.education_years; document.getElementById('v_edu').textContent=p.education_years;
+  document.getElementById('income').value=p.monthly_income; document.getElementById('v_income').textContent=p.monthly_income;
+  document.getElementById('marital').value=p.marital_status;
+  document.getElementById('living').value=p.living_situation;
+  document.getElementById('comor').value=p.comorbidities_count; document.getElementById('v_comor').textContent=p.comorbidities_count;
+  document.getElementById('sleep').value=p.sleep_hours; document.getElementById('v_sleep').textContent=p.sleep_hours;
+  document.getElementById('act_type').value=p.physical_activity_type;
+  document.getElementById('act_int').value=p.physical_activity_intensity;
+  document.getElementById('days').value=p.physical_activity_days_per_week; document.getElementById('v_days').textContent=p.physical_activity_days_per_week;
+  document.getElementById('mins').value=p.physical_activity_minutes_per_session; document.getElementById('v_mins').textContent=p.physical_activity_minutes_per_session;
+  calcTotal();
+  resetBase();
+  prever();
+}
+
+async function congelar(){
+  base=getPerfil();
+  document.getElementById('sec-base').style.display='none';
+  document.getElementById('sec-interv').style.display='block';
+  document.getElementById('controlos-perfil').style.display='none';
+  document.getElementById('base-phq9').textContent='…';
+  document.getElementById('base-gad7').textContent='…';
+  const r=await fetch(API+'/prever',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(base)});
+  const d=await r.json();
+  document.getElementById('base-phq9').textContent=d.phq9;
+  document.getElementById('base-gad7').textContent=d.gad7;
+  calcInterv();
+}
+
+function resetBase(){
+  base=null; intervData=null; pins={};
+  document.getElementById('sec-base').style.display='block';
+  document.getElementById('sec-interv').style.display='none';
+  document.getElementById('controlos-perfil').style.display='block';
+  renderPins();
+}
+
+function fixarValor(){
+  const chave = document.getElementById('var-sel').value;
+  const val = +document.getElementById('interv-slider').value;
+  const cfg = CFG[chave];
+  pins[chave] = val;
+  // Atualizar base com o valor fixado
+  base[chave] = val;
+  if(chave==='physical_activity_total_minutes_week'){
+    const d=Math.max(base.physical_activity_days_per_week,1);
+    base.physical_activity_minutes_per_session=val/d;
+  }
+  renderPins();
+  calcInterv();
+}
+
+function removerPin(chave){
+  delete pins[chave];
+  // Repor valor original no base
+  calcInterv();
+  renderPins();
+}
+
+function renderPins(){
+  const row = document.getElementById('pin-row');
+  if(!row) return;
+  const labels={'physical_activity_total_minutes_week':'Min/sem','sleep_hours':'Sono','physical_activity_minutes_per_session':'Min/sessão'};
+  row.innerHTML = Object.entries(pins).map(([k,v])=>
+    `<div class="pin-tag">📌 ${labels[k]||k} = ${v}<button onclick="removerPin('${k}')">✕</button></div>`
+  ).join('');
+}
+
+async function calcInterv(){
+  if(!base) return;
+  const chave=document.getElementById('var-sel').value;
+  const cfg=CFG[chave];
+  const sl=document.getElementById('interv-slider');
+  sl.min=cfg.min; sl.max=cfg.max; sl.step=cfg.step;
+  sl.value=base[chave]||cfg.min;
+  document.getElementById('interv-val').textContent=sl.value;
+  document.getElementById('interv-lbl').childNodes[0].textContent=cfg.lbl+' ';
+  try{
+    // Aplicar pins ao perfil base antes de enviar
+    const baseComPins = {...base, ...pins};
+    const r=await fetch(API+'/intervencao',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({perfil_base:baseComPins,chave,vmin:cfg.min,vmax:cfg.max,vstep:cfg.step,dias_base:baseComPins.physical_activity_days_per_week||1})});
+    intervData=await r.json();
+    drawChart(intervData,cfg.un,+sl.value);
+    updateLimiares(intervData,cfg.un);
+  }catch(e){console.error(e);}
+}
+
+function syncInterv(){
+  const val=+document.getElementById('interv-slider').value;
+  document.getElementById('interv-val').textContent=val;
+  const chave=document.getElementById('var-sel').value;
+  if(intervData) drawChart(intervData,CFG[chave].un,val);
+  const p={...base,...pins}; p[chave]=val;
+  if(chave==='physical_activity_total_minutes_week'){
+    const d=Math.max(p.physical_activity_days_per_week,1);
+    p.physical_activity_minutes_per_session=val/d;
+  } else if(chave==='physical_activity_days_per_week'){
+    p.physical_activity_total_minutes_week=val*p.physical_activity_minutes_per_session;
+  } else if(chave==='physical_activity_minutes_per_session'){
+    p.physical_activity_total_minutes_week=val*p.physical_activity_days_per_week;
+  }
+  fetch(API+'/prever',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)})
+    .then(r=>r.json()).then(d=>{drawGauge('g-phq9',d.phq9,OP9);drawGauge('g-gad7',d.gad7,OG7);updateChips(d.phq9,d.gad7);updateMetrics(p);renderShap(d.shap_phq9,d.shap_gad7);}).catch(()=>{});
+}
+
+function drawChart(data,un,valAtual){
+  const canvas=document.getElementById('chart');
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=canvas.offsetWidth*dpr; canvas.height=130*dpr;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const W=canvas.offsetWidth||300, H=130;
+  ctx.clearRect(0,0,W,H);
+  const vals=data.valores, n=vals.length;
+  const pL=42,pR=8,pT=16,pB=20, gW=W-pL-pR, gH=H-pT-pB;
+  const xp=i=>pL+(i/(n-1))*gW;
+  const yp9=i=>pT+gH-(i/(OP9.length-1))*gH;
+  const yg7=i=>pT+gH-(i/(OG7.length-1))*gH;
+  // PHQ9
+  for(let i=0;i<n-1;i++){ctx.beginPath();ctx.moveTo(xp(i),yp9(data.res_phq9[i]));ctx.lineTo(xp(i+1),yp9(data.res_phq9[i+1]));ctx.strokeStyle=CORES[OP9[data.res_phq9[i]]];ctx.lineWidth=2.2;ctx.setLineDash([]);ctx.stroke();}
+  // GAD7
+  for(let i=0;i<n-1;i++){ctx.beginPath();ctx.moveTo(xp(i),yg7(data.res_gad7[i]));ctx.lineTo(xp(i+1),yg7(data.res_gad7[i+1]));ctx.strokeStyle=CORES[OG7[data.res_gad7[i]]];ctx.lineWidth=2.2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);}
+  // Limiares
+  [data.limiar_phq9,data.limiar_gad7].forEach(lim=>{
+    if(lim!=null){const xi=vals.findIndex(v=>Math.abs(v-lim)<0.001);if(xi>=0){ctx.beginPath();ctx.moveTo(xp(xi),pT);ctx.lineTo(xp(xi),pT+gH);ctx.strokeStyle='#F97316';ctx.lineWidth=1.3;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);}}
+  });
+  // Ponto atual
+  const ia=vals.reduce((bi,v,i)=>Math.abs(v-valAtual)<Math.abs(vals[bi]-valAtual)?i:bi,0);
+  [['g-phq9',yp9(data.res_phq9[ia])],['g-gad7',yg7(data.res_gad7[ia])]].forEach(([,y])=>{ctx.beginPath();ctx.arc(xp(ia),y,4.5,0,Math.PI*2);ctx.fillStyle='#1A3A5C';ctx.fill();});
+  // Labels Y
+  ctx.fillStyle='#64748B';ctx.font=`${6.5*dpr/dpr}px Inter`;ctx.textAlign='right';
+  OP9.forEach((o,i)=>ctx.fillText(o,pL-3,yp9(i)+3));
+  // Legenda
+  ctx.fillStyle='#1A3A5C';ctx.font='bold 7px Inter';ctx.textAlign='left';ctx.fillText('— PHQ-9',pL,11);
+  ctx.fillStyle='#64748B';ctx.fillText('--- GAD-7',pL+52,11);
+  // X label
+  ctx.fillStyle='#94A3B8';ctx.font='6.5px Inter';ctx.textAlign='center';ctx.fillText(un,W/2,H-3);
+}
+
+function updateLimiares(data,un){
+  const lp=data.limiar_phq9, lg=data.limiar_gad7;
+  const bpv=document.getElementById('lval-p'), bpt=document.getElementById('ltxt-p'), bp=document.getElementById('lbox-p');
+  const bgv=document.getElementById('lval-g'), bgt=document.getElementById('ltxt-g'), bg=document.getElementById('lbox-g');
+  if(lp!=null){const d=lp>(base.physical_activity_total_minutes_week||0)?'↑':'↓';bpv.textContent=`${d} ${lp.toFixed(0)} ${un}`;bpt.innerHTML=`PHQ-9 → <strong>${data.nova_phq9}</strong>`;bp.className='lbox';}
+  else{bpv.textContent='—';bpt.textContent='PHQ-9: sem mudança';bp.className='lbox none';}
+  if(lg!=null){const d=lg>(base.sleep_hours||0)?'↑':'↓';bgv.textContent=`${d} ${lg.toFixed(0)} ${un}`;bgt.innerHTML=`GAD-7 → <strong>${data.nova_gad7}</strong>`;bg.className='lbox';}
+  else{bgv.textContent='—';bgt.textContent='GAD-7: sem mudança';bg.className='lbox none';}
+}
+
+let dsData = [];
+let dsFiltrado = [];
+
+async function toggleDataset(){
+  const ov = document.getElementById('overlay-ds');
+  ov.classList.toggle('open');
+  if(ov.classList.contains('open') && dsData.length===0){
+    await carregarDataset();
+  }
+}
+function closeDsModal(e){ if(e.target===document.getElementById('overlay-ds')) toggleDataset(); }
+
+async function carregarDataset(){
+  try{
+    const r = await fetch(API+'/dataset');
+    dsData = await r.json();
+    dsFiltrado = dsData;
+    renderDataset(dsData);
+  }catch(e){ document.getElementById('ds-count').textContent='Erro ao carregar dataset.'; }
+}
+
+const CHIP_CLS_MINI = {'Mínima':'cm-minima','Leve':'cm-leve','Moderada':'cm-moderada','Mod. grave':'cm-modgrave','Grave':'cm-grave'};
+
+function renderDataset(rows){
+  const tbody = document.getElementById('ds-body');
+  document.getElementById('ds-count').textContent = rows.length + ' participantes';
+  tbody.innerHTML = rows.slice(0,500).map(r => {
+    const cp = CHIP_CLS_MINI[r.pred_phq9]||'';
+    const cg = CHIP_CLS_MINI[r.pred_gad7]||'';
+    return `<tr onclick="carregarParticipante(${r.id})">
+      <td><strong>${r.id}</strong></td>
+      <td>${r.age}</td>
+      <td>${r.gender_lbl}</td>
+      <td>${r.sleep_hours}h</td>
+      <td>${r.comorbidities_count}</td>
+      <td>${r.physical_activity_days_per_week}</td>
+      <td>${r.physical_activity_total_minutes_week}</td>
+      <td>${r.type_lbl}</td>
+      <td>${r.intensity_lbl}</td>
+      <td>${r.phq9}</td>
+      <td>${r.gad7}</td>
+      <td><span class="chip-mini ${cp}">${r.pred_phq9}</span></td>
+      <td><span class="chip-mini ${cg}">${r.pred_gad7}</span></td>
+    </tr>`;
+  }).join('');
+  if(rows.length>500) document.getElementById('ds-count').textContent += ' (a mostrar 500)';
+}
+
+function filtrarDataset(q){
+  q = q.toLowerCase();
+  dsFiltrado = dsData.filter(r =>
+    String(r.id).includes(q) ||
+    String(r.age).includes(q) ||
+    r.gender_lbl.toLowerCase().includes(q) ||
+    r.pred_phq9.toLowerCase().includes(q) ||
+    r.pred_gad7.toLowerCase().includes(q) ||
+    r.type_lbl.toLowerCase().includes(q)
+  );
+  renderDataset(dsFiltrado);
+}
+
+function carregarParticipante(id){
+  const r = dsData.find(x=>x.id===id);
+  if(!r) return;
+  // Fechar modal
+  document.getElementById('overlay-ds').classList.remove('open');
+  // Desselecionar perfis
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+  const pidEl = document.getElementById('participante-id');
+  const pidVal = document.getElementById('pid-val');
+  if(pidEl && pidVal){ pidEl.style.display='block'; pidVal.textContent=id; }
+  // Carregar nos sliders
+  document.getElementById('age').value=r.age; document.getElementById('v_age').textContent=r.age;
+  document.getElementById('gender').value=r.gender;
+  document.getElementById('edu').value=r.education_years; document.getElementById('v_edu').textContent=r.education_years;
+  document.getElementById('income').value=r.monthly_income; document.getElementById('v_income').textContent=Math.round(r.monthly_income);
+  document.getElementById('marital').value=r.marital_status;
+  document.getElementById('living').value=r.living_situation;
+  document.getElementById('comor').value=r.comorbidities_count; document.getElementById('v_comor').textContent=r.comorbidities_count;
+  document.getElementById('sleep').value=r.sleep_hours; document.getElementById('v_sleep').textContent=r.sleep_hours;
+  document.getElementById('act_type').value=r.physical_activity_type;
+  document.getElementById('act_int').value=r.physical_activity_intensity;
+  document.getElementById('days').value=r.physical_activity_days_per_week; document.getElementById('v_days').textContent=r.physical_activity_days_per_week;
+  document.getElementById('mins').value=r.physical_activity_minutes_per_session; document.getElementById('v_mins').textContent=r.physical_activity_minutes_per_session;
+  calcTotal();
+  resetBase();
+  prever();
+}
+
+window.addEventListener('load',()=>{
+  loadPerfil('alto', document.querySelector('.pbtn'));
+});
+</script>
+</body>
+</html>
