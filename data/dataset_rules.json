@@ -1,0 +1,230 @@
+{
+  "dataset_description": "Synthetic dataset of elderly population with physical activity and psychological assessment scores.",
+  "variables": [
+    {
+      "name": "participant_id",
+      "type": "integer",
+      "description": "Sequential unique identifier.",
+      "rule": "Sequential integer from 1 to N. Must be unique, no repetitions."
+    },
+    {
+      "name": "age",
+      "type": "integer",
+      "range": [63, 90],
+      "description": "Age in years.",
+      "rule": "Sample from Normal(mean=74, sd=6), truncated to [65, 90]. Round to integer."
+    },
+    {
+      "name": "gender",
+      "type": "integer",
+      "encoding": { "1": "Male", "2": "Female" },
+      "rule": "P(Female=2) = 0.57, P(Male=1) = 0.43."
+    },
+    {
+      "name": "education_years",
+      "type": "integer",
+      "range": [0, 16],
+      "rule": "Sample from Normal(mean=7, sd=4), truncated to [0, 16]."
+    },
+    {
+      "name": "monthly_income",
+      "type": "float",
+      "range": [300, 6000],
+      "description": "Monthly income in euros.",
+      "rule": "income = clip(exp(5.8 + 0.025 * education_years + Normal(0, 0.85)), 300, 5000). Round to 2 decimal places. Produces log-normal distribution with r(education_years, monthly_income) ≈ 0.30–0.45."
+    },
+    {
+      "name": "marital_status",
+      "type": "integer",
+      "encoding": { "1": "Single", "2": "Married", "3": "Divorced", "4": "Widowed" },
+      "rule": "Stratified by gender and age bracket.",
+      "strata": [
+        { "condition": "Female AND age < 75",       "probabilities": { "Single": 0.07, "Married": 0.42, "Divorced": 0.14, "Widowed": 0.37 } },
+        { "condition": "Female AND 75 <= age <= 82", "probabilities": { "Single": 0.06, "Married": 0.32, "Divorced": 0.12, "Widowed": 0.50 } },
+        { "condition": "Female AND age > 82",        "probabilities": { "Single": 0.05, "Married": 0.25, "Divorced": 0.10, "Widowed": 0.60 } },
+        { "condition": "Male AND age < 75",          "probabilities": { "Single": 0.08, "Married": 0.62, "Divorced": 0.14, "Widowed": 0.16 } },
+        { "condition": "Male AND 75 <= age <= 82",   "probabilities": { "Single": 0.07, "Married": 0.58, "Divorced": 0.12, "Widowed": 0.23 } },
+        { "condition": "Male AND age > 82",          "probabilities": { "Single": 0.06, "Married": 0.52, "Divorced": 0.10, "Widowed": 0.32 } }
+      ]
+    },
+    {
+      "name": "living_situation",
+      "type": "integer",
+      "encoding": { "1": "Alone", "2": "With partner", "3": "With family", "4": "Institution" },
+      "rule": "Conditional on marital_status. Generate comorbidities_count first.",
+      "base_probabilities_by_marital_status": {
+        "Single (1)":   { "Alone": 0.45, "With partner": 0.02, "With family": 0.43, "Institution": 0.10 },
+        "Married (2)":  { "Alone": 0.05, "With partner": 0.80, "With family": 0.12, "Institution": 0.03 },
+        "Divorced (3)": { "Alone": 0.55, "With partner": 0.03, "With family": 0.35, "Institution": 0.07 },
+        "Widowed (4)":  { "Alone": 0.50, "With partner": 0.02, "With family": 0.35, "Institution": 0.13 }
+      },
+      "adjustments": [
+        "Add +0.05 to P(Institution) if age > 84.",
+        "Add +0.03 to P(Institution) per comorbidity above 3 (i.e., per unit of max(0, comorbidities_count - 3)).",
+        "Renormalize all probabilities after adjustment."
+      ]
+    },
+    {
+      "name": "comorbidities_count",
+      "type": "integer",
+      "description": "Number of chronic comorbidities. Non-negative integer.",
+      "rule": "Sample from Poisson(λ). Brackets are mutually exclusive.",
+      "lambda_by_age": [
+        { "condition": "age in [65, 70]", "lambda": 1.5 },
+        { "condition": "age in [71, 79]", "lambda": 2.0 },
+        { "condition": "age >= 80",       "lambda": 2.5 }
+      ]
+    },
+    {
+      "name": "physical_activity_days_per_week",
+      "type": "integer",
+      "range": [0, 7],
+      "base_distribution": {
+        "0 days":   0.25,
+        "1-2 days": 0.25,
+        "3-4 days": 0.30,
+        "5-7 days": 0.20
+      },
+      "adjustments": [
+        "Age penalty: for each 5 years above 65, subtract 0.02 from P(≥4 days) and redistribute to P(0 days).",
+        "Comorbidity penalty: P(0 days) += 0.03 per comorbidity above 1, capped at P(0 days) = 0.45.",
+        "Renormalize after each adjustment."
+      ]
+    },
+    {
+      "name": "physical_activity_minutes_per_session",
+      "type": "integer",
+      "range": [0, 90],
+      "rule": "If physical_activity_days_per_week = 0, set to 0. Otherwise sample from Normal(mean=35, sd=15) truncated to [10, 90], round to integer."
+    },
+    {
+      "name": "physical_activity_total_minutes_week",
+      "type": "integer",
+      "description": "Total weekly physical activity minutes. Derived with mandatory noise.",
+      "rule": "If days = 0, set to 0 exactly. Otherwise: base = days * minutes_per_session; sigma = max(0.20 * base + 8, 10); total = max(0, round(base + Normal(0, sigma))). Noise is mandatory: total must differ from base by ≥10% on average."
+    },
+    {
+      "name": "physical_activity_type",
+      "type": "integer",
+      "encoding": { "0": "None", "1": "Walking", "2": "Light (yoga/stretching)", "3": "Household/gardening", "4": "Moderate exercise", "5": "Vigorous exercise" },
+      "rule": "If days = 0, set to 0. If days > 0, sample from [0,1,2,3,4,5] with probabilities [0, 0.45, 0.20, 0.18, 0.12, 0.05]. If type 0 is drawn for days > 0, resample until type ≠ 0."
+    },
+    {
+      "name": "physical_activity_intensity",
+      "type": "integer",
+      "encoding": { "0": "None", "1": "Light", "2": "Moderate", "3": "Vigorous" },
+      "rule": "If days = 0, set to 0. If days > 0, assign based on type (intensity must be in {1,2,3}, never 0).",
+      "conditional_on_type": {
+        "Type 1 - Walking":   { "Light": 0.55, "Moderate": 0.45 },
+        "Type 2 - Light":     { "Light": 1.00 },
+        "Type 3 - Household": { "Light": 0.80, "Moderate": 0.20 },
+        "Type 4 - Moderate":  { "Moderate": 1.00 },
+        "Type 5 - Vigorous":  { "Vigorous": 1.00 }
+      },
+      "assertion": "If physical_activity_days_per_week > 0, physical_activity_intensity must be in {1, 2, 3}. Never 0."
+    },
+    {
+      "name": "sleep_hours",
+      "type": "float",
+      "range": [3.0, 10.0],
+      "rule": "Sample from Normal(mean=7.0, sd=1.1), truncated to [4.0, 10.0]. Round to 1 decimal place."
+    },
+    {
+      "name": "phq9_total",
+      "type": "integer",
+      "range": [0, 27],
+      "description": "PHQ-9 depression score.",
+      "formula": {
+        "dummies": {
+          "female_dummy": "1 if gender = 2, else 0",
+          "widowed_dummy": "1 if marital_status = 4, else 0",
+          "divorced_dummy": "1 if marital_status = 3, else 0"
+        },
+        "raw": "Normal(5, 3.5) + (0.40 * comorbidities_count) - (0.003 * physical_activity_total_minutes_week) - (0.12 * sleep_hours) + (0.80 * female_dummy) - (0.012 * (monthly_income / 100)) + (1.00 * widowed_dummy) + (0.50 * divorced_dummy) + Normal(0, 5.0)",
+        "final": "clip(round(raw), 0, 27)",
+        "note": "Save the pre-clip raw value for use in gad7_total calculation."
+      }
+    },
+    {
+      "name": "phq9_classe",
+      "type": "string",
+      "description": "Clinical classification of PHQ-9 depression score. Deterministic mapping, no noise.",
+      "derived_from": "phq9_total",
+      "mapping": [
+        { "range": [0,  4],  "label": "Mínima" },
+        { "range": [5,  9],  "label": "Leve" },
+        { "range": [10, 14], "label": "Moderada" },
+        { "range": [15, 19], "label": "Mod. grave" },
+        { "range": [20, 27], "label": "Grave" }
+      ],
+      "rule": "if 0 <= phq9_total <= 4 → 'Mínima'; elif 5 <= phq9_total <= 9 → 'Leve'; elif 10 <= phq9_total <= 14 → 'Moderada'; elif 15 <= phq9_total <= 19 → 'Mod. grave'; elif 20 <= phq9_total <= 27 → 'Grave'."
+    },
+    {
+      "name": "gad7_total",
+      "type": "integer",
+      "range": [0, 21],
+      "description": "GAD-7 anxiety score.",
+      "formula": {
+        "dependencies": ["female_dummy (same as phq9)", "comorbidities_count", "physical_activity_total_minutes_week", "sleep_hours", "raw_phq9 (pre-clip value from phq9_total step)"],
+        "raw": "Normal(4, 2.5) + (0.35 * comorbidities_count) - (0.002 * physical_activity_total_minutes_week) - (0.09 * sleep_hours) + (0.60 * female_dummy) + (0.02 * raw_phq9) + Normal(0, 6.0)",
+        "final": "clip(round(raw), 0, 21)"
+      }
+    },
+    {
+      "name": "gad7_classe",
+      "type": "string",
+      "description": "Clinical classification of GAD-7 anxiety score. Deterministic mapping, no noise.",
+      "derived_from": "gad7_total",
+      "mapping": [
+        { "range": [0,  4],  "label": "Mínima" },
+        { "range": [5,  9],  "label": "Leve" },
+        { "range": [10, 14], "label": "Moderada" },
+        { "range": [15, 21], "label": "Grave" }
+      ],
+      "rule": "if 0 <= gad7_total <= 4 → 'Mínima'; elif 5 <= gad7_total <= 9 → 'Leve'; elif 10 <= gad7_total <= 14 → 'Moderada'; elif 15 <= gad7_total <= 21 → 'Grave'."
+    }
+  ],
+  "generation_order": [
+    "participant_id",
+    "age",
+    "gender",
+    "education_years",
+    "monthly_income",
+    "comorbidities_count",
+    "marital_status",
+    "living_situation",
+    "physical_activity_days_per_week",
+    "physical_activity_minutes_per_session",
+    "physical_activity_total_minutes_week",
+    "physical_activity_type",
+    "physical_activity_intensity",
+    "sleep_hours",
+    "phq9_total (save raw_phq9 pre-clip)",
+    "phq9_classe (derived from phq9_total)",
+    "gad7_total (uses raw_phq9)",
+    "gad7_classe (derived from gad7_total)"
+  ],
+  "realism_constraints": [
+    "participant_id must be unique and strictly sequential.",
+    "phq9_total and gad7_total can be 0. Do not floor above 0.",
+    "physical_activity_total_minutes_week must differ from days × minutes by at least ±10% on average. Exception: if days = 0, total = 0 exactly.",
+    "~5–10% of active participants (days > 0) must have phq9_total ≥ 15.",
+    "~5–10% of sedentary participants (days = 0) must have phq9_total ≤ 3.",
+    "Do NOT produce deterministic patterns. All derived variables must include stochastic noise."
+  ],
+  "post_hoc_overrides": {
+    "description": "After the main generation loop, apply the following dissociated-extreme overrides by selecting random participants and overriding their scores.",
+    "cases": [
+      {
+        "name": "High depression, low anxiety",
+        "target_proportion": "2–3% of total participants",
+        "condition": "phq9_total >= 15 AND gad7_total <= 5"
+      },
+      {
+        "name": "Low depression, high anxiety",
+        "target_proportion": "2–3% of total participants",
+        "condition": "phq9_total <= 5 AND gad7_total >= 12"
+      }
+    ]
+  }
+}
