@@ -1,0 +1,24 @@
+# Interface
+fastapi
+uvicorn
+pydantic
+
+# ML
+scikit-learn
+xgboost
+lightgbm
+catboost
+shap
+
+# Data
+pandas
+numpy
+scipy
+
+# Visualização
+matplotlib
+seaborn
+
+# LLM
+requests
+httpx
